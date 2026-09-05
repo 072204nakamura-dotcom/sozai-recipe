@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>お惣菜レシピ帳</title>
+<style>
+:root{
+  --main:#4a7c59; --main-dark:#35603f; --main-light:#e6f0e8; --accent:#d97b2e;
+  --bg:#f7f6f1; --card:#ffffff; --text:#2c2c2c; --sub:#777; --line:#e2e0d8; --danger:#c0392b;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;font-size:16px;}
+header{position:sticky;top:0;z-index:20;background:var(--main);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 6px rgba(0,0,0,.15);}
+header h1{margin:0;font-size:18px;font-weight:700;}
+header .hs{font-size:12px;opacity:.9;}
+nav.tabs{position:sticky;top:46px;z-index:19;display:flex;background:var(--card);border-bottom:1px solid var(--line);}
+nav.tabs button{flex:1;padding:12px 4px;border:none;background:none;font-size:15px;color:var(--sub);border-bottom:3px solid transparent;}
+nav.tabs button.active{color:var(--main);border-bottom-color:var(--main);font-weight:700;}
+main{padding:14px 14px 90px;max-width:820px;margin:0 auto;}
+.page{display:none;} .page.active{display:block;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;}
+.card h2{margin:0 0 10px;font-size:16px;color:var(--main-dark);}
+.card h3{margin:14px 0 6px;font-size:14px;color:var(--main-dark);border-left:4px solid var(--main);padding-left:8px;}
+label.lbl{display:block;font-size:13px;color:var(--sub);margin:8px 0 3px;}
+input[type=text],input[type=number],select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:16px;background:#fff;color:var(--text);}
+textarea{min-height:110px;line-height:1.5;resize:vertical;}
+.btn{display:inline-block;padding:11px 16px;border:none;border-radius:10px;background:var(--main);color:#fff;font-size:15px;font-weight:600;cursor:pointer;}
+.btn.sub{background:#fff;color:var(--main);border:1.5px solid var(--main);}
+.btn.warn{background:var(--accent);}
+.btn.danger{background:var(--danger);}
+.btn.small{padding:6px 10px;font-size:13px;border-radius:8px;}
+.btn.block{display:block;width:100%;text-align:center;}
+.btn:disabled{opacity:.5;}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.row > *{flex:1;}
+.muted{color:var(--sub);font-size:13px;}
+.badge{display:inline-block;background:var(--main-light);color:var(--main-dark);border-radius:20px;padding:2px 10px;font-size:12px;margin-right:4px;}
+.search{display:flex;gap:8px;margin-bottom:10px;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.chip{padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:#fff;font-size:13px;color:var(--sub);}
+.chip.on{background:var(--main);color:#fff;border-color:var(--main);}
+.list-item{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;cursor:pointer;}
+.list-item img,.list-item .noimg{width:70px;height:70px;border-radius:8px;object-fit:cover;background:var(--main-light);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:28px;}
+.list-item .t{font-weight:700;font-size:15px;}
+.list-item .s{font-size:12px;color:var(--sub);margin-top:3px;}
+.list-item .cost{margin-left:auto;text-align:right;flex-shrink:0;}
+.list-item .cost b{font-size:17px;color:var(--main-dark);}
+/* recording */
+.mic{width:110px;height:110px;border-radius:50%;background:var(--main);color:#fff;border:none;font-size:44px;margin:10px auto;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(74,124,89,.4);}
+.mic.rec{background:var(--danger);animation:pulse 1.2s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(192,57,43,.5);}70%{box-shadow:0 0 0 22px rgba(192,57,43,0);}100%{box-shadow:0 0 0 0 rgba(192,57,43,0);}}
+.interim{color:var(--sub);font-style:italic;min-height:22px;font-size:14px;}
+/* ingredient table */
+table.ing{width:100%;border-collapse:collapse;font-size:14px;}
+table.ing th{font-size:12px;color:var(--sub);text-align:left;padding:4px 4px;border-bottom:1px solid var(--line);font-weight:normal;}
+table.ing td{padding:7px 4px;border-bottom:1px solid #f0efe9;vertical-align:middle;}
+table.ing td.num{text-align:right;white-space:nowrap;}
+table.ing .nm{font-weight:600;}
+table.ing .nm.unlinked{color:var(--accent);}
+table.ing .amt{font-weight:700;color:var(--main-dark);cursor:pointer;text-decoration:underline dotted;}
+.scale-bar{display:flex;gap:6px;margin:8px 0;}
+.scale-bar button{flex:1;padding:8px 0;border-radius:8px;border:1px solid var(--main);background:#fff;color:var(--main);font-weight:700;}
+.scale-bar button.on{background:var(--main);color:#fff;}
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0;}
+.kpi div{background:var(--main-light);border-radius:10px;padding:10px 6px;text-align:center;}
+.kpi .v{font-size:20px;font-weight:700;color:var(--main-dark);}
+.kpi .k{font-size:11px;color:var(--sub);}
+ol.steps{padding-left:22px;line-height:1.7;} ol.steps li{margin-bottom:6px;}
+ul.points{padding-left:0;list-style:none;} ul.points li{background:#fff8ec;border-left:4px solid var(--accent);padding:8px 10px;border-radius:0 8px 8px 0;margin-bottom:6px;font-size:14px;}
+.photo{width:100%;max-height:320px;object-fit:cover;border-radius:12px;display:block;margin-bottom:10px;background:var(--main-light);}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:none;align-items:flex-end;justify-content:center;}
+.modal.open{display:flex;}
+.modal .box{background:var(--card);width:100%;max-width:820px;max-height:88vh;border-radius:16px 16px 0 0;padding:16px;overflow:auto;}
+.modal .box h2{margin:0 0 10px;font-size:16px;}
+.pick{padding:11px 8px;border-bottom:1px solid var(--line);cursor:pointer;display:flex;justify-content:space-between;}
+.pick small{color:var(--sub);}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#333;color:#fff;padding:10px 18px;border-radius:24px;font-size:14px;z-index:99;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%;}
+.toast.show{opacity:1;}
+.fab{position:fixed;right:18px;bottom:24px;width:58px;height:58px;border-radius:50%;background:var(--accent);color:#fff;font-size:30px;border:none;box-shadow:0 4px 12px rgba(0,0,0,.25);z-index:30;}
+.editrow{display:grid;grid-template-columns:1fr 78px 60px 34px;gap:6px;margin-bottom:6px;align-items:center;}
+.editrow input,.editrow select{padding:8px 6px;font-size:14px;}
+.editrow .x{border:none;background:none;color:var(--danger);font-size:20px;}
+.steprow{display:flex;gap:6px;margin-bottom:6px;align-items:flex-start;}
+.steprow span{width:22px;padding-top:10px;color:var(--sub);font-size:13px;}
+.steprow textarea{min-height:48px;}
+.steprow .x{border:none;background:none;color:var(--danger);font-size:20px;padding-top:6px;}
+.status{font-size:12px;color:var(--sub);text-align:right;margin-bottom:6px;}
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🍱 お惣菜レシピ帳</h1>
+  <span class="hs" id="syncStatus">未同期</span>
+</header>
+<nav class="tabs">
+  <button class="active" data-tab="list">📋 レシピ</button>
+  <button data-tab="voice">🎤 音声で作る</button>
+  <button data-tab="settings">⚙ 設定</button>
+</nav>
+<main>
+
+<!-- ===== レシピ一覧 ===== -->
+<section class="page active" id="page-list">
+  <div class="search"><input type="text" id="q" placeholder="料理名・材料で検索"></div>
+  <div class="chips" id="catChips"></div>
+  <div id="recipeList"></div>
+</section>
+
+<!-- ===== 音声入力 ===== -->
+<section class="page" id="page-voice">
+  <div class="card">
+    <h2>調理しながら喋ってください</h2>
+    <p class="muted">例：「鶏もも肉300gを一口大に切って、塩3g振って、しょうゆ20mlとみりん20mlで煮ます。仕上げにごま油少々。ポイントは最後に強火で煮詰めること」</p>
+    <button class="mic" id="micBtn">🎤</button>
+    <div style="text-align:center" class="muted" id="micLabel">タップで録音開始</div>
+    <div class="interim" id="interim"></div>
+    <label class="lbl">聞き取った内容（手で直せます）</label>
+    <textarea id="transcript" placeholder="ここに喋った内容がたまっていきます。キーボードで追記・修正もできます。"></textarea>
+    <div class="row" style="margin-top:8px">
+      <button class="btn sub" id="clearTx">消す</button>
+      <button class="btn warn" id="aiBtn">✨ AIでレシピに整形</button>
+    </div>
+    <p class="muted" id="aiNote" style="margin-top:8px"></p>
+  </div>
+  <div class="card">
+    <button class="btn sub block" id="manualNew">✏️ 喋らずに手入力で新規作成</button>
+  </div>
+</section>
+
+<!-- ===== 設定 ===== -->
+<section class="page" id="page-settings">
+  <div class="card">
+    <h2>☁️ クラウド設定</h2>
+    <label class="lbl">GAS WebアプリのURL</label>
+    <input type="text" id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec">
+    <div class="row" style="margin-top:8px">
+      <button class="btn" id="saveGas">URLを保存</button>
+      <button class="btn sub" id="testGas">接続テスト</button>
+    </div>
+    <p class="muted" id="gasMsg"></p>
+  </div>
+  <div class="card">
+    <h2>🧂 食材マスター</h2>
+    <p class="muted">原価管理アプリ（cafe-shift）の食材マスターをそのまま読み込みます。単価の変更は原価管理アプリ側で行ってください。</p>
+    <div class="row">
+      <button class="btn" id="reloadIng">🔄 マスターを再読み込み</button>
+    </div>
+    <p class="muted" id="ingMsg"></p>
+  </div>
+  <div class="card">
+    <h2>🤖 AI整形（Anthropic APIキー）</h2>
+    <p class="muted">音声テキストを材料・分量・手順・味付けポイントに自動で仕分けます。キーはこの端末のブラウザ内だけに保存されます。1回あたり約1〜3円。</p>
+    <input type="text" id="apiKey" placeholder="sk-ant-...">
+    <div class="row" style="margin-top:8px"><button class="btn" id="saveKey">キーを保存</button><button class="btn sub" id="delKey">キーを削除</button></div>
+    <p class="muted" id="keyMsg"></p>
+  </div>
+  <div class="card">
+    <h2>💰 原価の表示</h2>
+    <label class="lbl"><input type="checkbox" id="taxIncl"> 税込で表示する（通常は税抜）</label>
+    <label class="lbl">目標原価率（%）　<small>この率で「目安売価」を計算します</small></label>
+    <div class="row"><input type="number" id="targetRate" inputmode="numeric" placeholder="30"><button class="btn small" id="saveRate" style="flex:0 0 auto">保存</button></div>
+    <p class="muted">各レシピの売価は、そのレシピの「✏️ 編集」→「📦 パック詰め」→「売価」に入れます。</p>
+  </div>
+  <div class="card">
+    <h2>🧹 データ</h2>
+    <div class="row">
+      <button class="btn sub" id="loadCloud">📥 クラウドから読み込み</button>
+      <button class="btn sub" id="exportJson">📤 バックアップ(JSON)</button>
+    </div>
+    <p class="muted" style="margin-top:8px">ルール：<b>開いたら自動で最新を読み込み。編集したら「💾 クラウドへ保存」</b>を押す。</p>
+  </div>
+</section>
+
+<!-- ===== 詳細 ===== -->
+<section class="page" id="page-detail"></section>
+
+<!-- ===== 編集 ===== -->
+<section class="page" id="page-edit"></section>
+
+</main>
+
+<button class="fab hidden" id="fab">＋</button>
+
+<!-- 食材選択モーダル -->
+<div class="modal" id="ingModal">
+  <div class="box">
+    <h2>食材を選ぶ <span class="muted" id="ingModalFor"></span></h2>
+    <input type="text" id="ingQ" placeholder="食材名で絞り込み">
+    <div class="chips" id="ingCats" style="margin-top:8px"></div>
+    <div id="ingPicks" style="max-height:50vh;overflow:auto"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn sub" id="ingManual">マスターにない（手入力）</button>
+      <button class="btn sub" id="ingClose">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ======================================================
+   お惣菜レシピ帳  v1.0
+   - 音声入力（Web Speech API）→ Claude APIで整形
+   - 食材マスター：原価管理アプリの DATA_ING を共有（読み取り専用）
+   - データ：GAS経由でスプレッドシート SOZAI_DATA へ保存（チャンク分割）
+   - 写真：GAS経由でGoogleドライブに保存
+   ====================================================== */
+const LS_DATA='sozai_v1', LS_GAS='sozai_gas', LS_KEY='sozai_apikey', LS_ING='sozai_ing_cache', LS_TAX='sozai_taxincl', LS_RATE='sozai_targetrate';
+const CATS=['煮物','和え物','揚げ物','焼き物','炒め物','サラダ・マリネ','ご飯もの','汁物','その他'];
+const CLAUDE_MODEL='claude-sonnet-4-6';
+
+let state={recipes:[],savedAt:0};
+let ING=[];            // 食材マスター
+let curId=null;        // 表示中レシピ
+let scale=1;           // 表示倍率
+let editing=null;      // 編集中レシピ（コピー）
+let catFilter='すべて';
+let ingPickTarget=null; // モーダルの戻り先
+
+/* ---------- ユーティリティ ---------- */
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+function toast(m,ms=2200){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),ms);}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function yen(n){return '¥'+(Math.round(n*10)/10).toLocaleString('ja-JP',{maximumFractionDigits:1});}
+function yen2(n){return '¥'+n.toFixed(2);}
+function fmtAmt(n){if(n==null||isNaN(n))return '';if(n>=100)return String(Math.round(n));if(n>=10)return String(Math.round(n*10)/10);return String(Math.round(n*100)/100);}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function gasUrl(){return localStorage.getItem(LS_GAS)||'';}
+function taxIncl(){return localStorage.getItem(LS_TAX)==='1';}
+function targetRate(){const v=Number(localStorage.getItem(LS_RATE));return v>0?v:30;}
+
+function saveLocal(){localStorage.setItem(LS_DATA,JSON.stringify(state));}
+function loadLocal(){try{const d=JSON.parse(localStorage.getItem(LS_DATA)||'null');if(d&&d.recipes)state=d;}catch(e){}
+  try{const i=JSON.parse(localStorage.getItem(LS_ING)||'null');if(Array.isArray(i))ING=i;}catch(e){}}
+
+/* ---------- 食材マスター ---------- */
+function ingById(id){return ING.find(x=>String(x.id)===String(id));}
+function isWeightUnit(u){return u==='g'||u==='ml';}
+function ingCategories(){const s=new Set();ING.forEach(i=>{if(i.category)s.add(i.category)});return Array.from(s);}
+async function fetchIngredients(silent){
+  if(!gasUrl()){if(!silent)toast('先に設定でGASのURLを入れてください');return false;}
+  try{
+    const r=await fetch(gasUrl()+'?action=ing&t='+Date.now());
+    const j=await r.json();
+    if(j.ok&&Array.isArray(j.data)){ING=j.data;localStorage.setItem(LS_ING,JSON.stringify(ING));
+      $('#ingMsg').textContent='読み込み済み：'+ING.length+'品目（'+new Date().toLocaleTimeString('ja-JP')+'）';
+      return true;}
+    throw new Error(j.error||'形式エラー');
+  }catch(e){if(!silent)toast('マスター読み込み失敗：'+e.message);$('#ingMsg').textContent='読み込み失敗：'+e.message;return false;}
+}
+
+/* ---------- 原価計算 ---------- */
+// 1行の原価（税抜）。倍率適用後の amount を渡す
+function lineCost(ing){
+  let price=null, yr=100, taxRate=0;
+  if(ing.masterId!=null){const m=ingById(ing.masterId);
+    if(m){price=Number(m.unitPrice)||0;yr=Number(m.yieldRate)||100;taxRate=Number(m.taxRate)||0;
+      // 単位が合わない（マスターg・レシピ個 など）は計算不能
+      if(!(isWeightUnit(m.unit)&&isWeightUnit(ing.unit))&&m.unit!==ing.unit)return {cost:null,warn:'単位不一致('+m.unit+')'};}
+  }
+  if(price==null){ if(ing.manualPrice!=null&&ing.manualPrice!==''){price=Number(ing.manualPrice);yr=Number(ing.manualYield)||100;taxRate=Number(ing.manualTax)||0;} else return {cost:null,warn:'単価なし'};}
+  if(ing.yieldOverride)yr=Number(ing.yieldOverride)||yr;
+  let c=(Number(ing.amount)||0)*price/(yr/100);
+  if(taxIncl())c=c*(1+taxRate);
+  return {cost:c,warn:null};
+}
+function recipeCalc(r,factor=1){
+  let total=0,warn=0,sumG=0;
+  (r.ingredients||[]).forEach(i=>{const a={...i,amount:(Number(i.amount)||0)*factor};const lc=lineCost(a);
+    if(lc.cost==null)warn++;else total+=lc.cost;
+    if(isWeightUnit(i.unit))sumG+=a.amount;});
+  const finishedG=(Number(r.finishedG)||sumG)*factor;
+  const perG=finishedG>0?total/finishedG:0;
+  let contPrice=0;
+  if(r.containerId!=null){const c=ingById(r.containerId);if(c){contPrice=Number(c.unitPrice)||0;if(taxIncl())contPrice*=1+(Number(c.taxRate)||0);}}
+  else if(r.containerManualPrice)contPrice=Number(r.containerManualPrice)||0;
+  const packG=Number(r.packG)||0;
+  const packCost=packG>0?perG*packG+contPrice:null;
+  const packs=packG>0?finishedG/packG:null;
+  const sell=Number(r.sellPrice)||0;
+  const costRate=(packCost!=null&&sell>0)?packCost/sell*100:null;
+  const suggestPrice=packCost!=null?Math.ceil(packCost/(targetRate()/100)/10)*10:null;
+  return {total,warn,sumG,finishedG,perG,contPrice,packCost,packs,costRate,suggestPrice};
+}
+
+/* ---------- タブ ---------- */
+function showTab(name){
+  $$('.page').forEach(p=>p.classList.remove('active'));
+  $('#page-'+name).classList.add('active');
+  $$('nav.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));
+  $('#fab').classList.toggle('hidden',name!=='list');
+  window.scrollTo(0,0);
+}
+$$('nav.tabs button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+$('#fab').addEventListener('click',()=>showTab('voice'));
+
+/* ---------- 一覧 ---------- */
+function renderChips(){
+  const c=$('#catChips');c.innerHTML='';
+  ['すべて',...CATS].forEach(k=>{const b=document.createElement('button');b.className='chip'+(catFilter===k?' on':'');b.textContent=k;
+    b.addEventListener('click',()=>{catFilter=k;renderChips();renderList();});c.appendChild(b);});
+}
+function renderList(){
+  const q=($('#q').value||'').trim();
+  const box=$('#recipeList');box.innerHTML='';
+  let list=state.recipes.slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  if(catFilter!=='すべて')list=list.filter(r=>r.category===catFilter);
+  if(q)list=list.filter(r=>(r.name+' '+(r.ingredients||[]).map(i=>i.name).join(' ')+' '+(r.points||[]).join(' ')).includes(q));
+  if(!list.length){box.innerHTML='<p class="muted" style="text-align:center;padding:30px 0">レシピがまだありません。<br>「🎤 音声で作る」から始めましょう。</p>';return;}
+  list.forEach(r=>{
+    const c=recipeCalc(r);
+    const d=document.createElement('div');d.className='list-item';
+    d.innerHTML=(r.photoUrl?`<img src="${esc(r.photoUrl)}" loading="lazy">`:`<div class="noimg">🍱</div>`)+
+      `<div><div class="t">${esc(r.name)}</div><div class="s"><span class="badge">${esc(r.category||'その他')}</span>${(r.ingredients||[]).slice(0,4).map(i=>esc(i.name)).join('・')}</div></div>`+
+      `<div class="cost"><b>${yen2(c.perG)}</b><div class="s">/g</div>${c.packCost!=null?`<div class="s">1パック ${yen(c.packCost)}</div>`:''}</div>`;
+    d.addEventListener('click',()=>openDetail(r.id));
+    box.appendChild(d);
+  });
+}
+$('#q').addEventListener('input',renderList);
+
+/* ---------- 詳細 ---------- */
+function openDetail(id){curId=id;scale=1;renderDetail();showTab('detail');}
+function renderDetail(){
+  const r=state.recipes.find(x=>x.id===curId);if(!r){showTab('list');return;}
+  const c=recipeCalc(r,scale);
+  const p=$('#page-detail');
+  const ingRows=(r.ingredients||[]).map((i,idx)=>{
+    const amt=(Number(i.amount)||0)*scale;const lc=lineCost({...i,amount:amt});
+    const m=i.masterId!=null?ingById(i.masterId):null;
+    return `<tr><td class="nm ${m||i.manualPrice?'':'unlinked'}">${esc(i.name)}${m?'':'<br><small class="muted">'+(i.manualPrice?'手入力単価':'⚠ 未紐づけ')+'</small>'}</td>
+      <td class="num"><span class="amt" data-idx="${idx}" title="タップでこの材料の量を基に再計算">${fmtAmt(amt)}</span> ${esc(i.unit||'')}</td>
+      <td class="num">${lc.cost==null?'<small class="muted">'+esc(lc.warn)+'</small>':yen(lc.cost)}</td></tr>`;}).join('');
+  p.innerHTML=`
+  <div class="row" style="margin-bottom:10px"><button class="btn sub small" id="backList" style="flex:0 0 auto">← 一覧</button><span></span><button class="btn small" id="editBtn" style="flex:0 0 auto">✏️ 編集</button></div>
+  ${r.photoUrl?`<img class="photo" src="${esc(r.photoUrl)}">`:''}
+  <div class="card">
+    <h2>${esc(r.name)} <span class="badge">${esc(r.category||'その他')}</span></h2>
+    <div class="kpi">
+      <div><div class="v">${yen2(c.perG)}</div><div class="k">g単価（${taxIncl()?'税込':'税抜'}）</div></div>
+      <div><div class="v">${yen(c.total)}</div><div class="k">材料費合計</div></div>
+      <div><div class="v">${fmtAmt(c.finishedG)}g</div><div class="k">出来上がり量${r.finishedG?'':'（材料合計）'}</div></div>
+    </div>
+    ${c.warn?`<p class="muted">⚠ 単価が出せない材料が${c.warn}件あります（編集で食材マスターに紐づけてください）</p>`:''}
+    <h3>分量換算　<small class="muted">材料の数字をタップ → その量を基に全体を再計算</small></h3>
+    <div class="scale-bar">${[0.5,1,1.5,2,3].map(f=>`<button data-f="${f}" class="${scale===f?'on':''}">×${f}</button>`).join('')}</div>
+    ${scale!==1?`<p class="muted">現在 ×${Math.round(scale*1000)/1000} で表示中（保存データは変わりません） <button class="btn small warn" id="applyScale">この分量で上書き保存</button></p>`:''}
+    <table class="ing"><tr><th>材料</th><th style="text-align:right">分量</th><th style="text-align:right">原価</th></tr>${ingRows}</table>
+  </div>
+  <div class="card">
+    <h2>📦 パック詰め</h2>
+    ${Number(r.packG)>0?`
+    <div class="kpi">
+      <div><div class="v">${yen(c.packCost)}</div><div class="k">1パック原価</div></div>
+      <div><div class="v">${c.packs!=null?fmtAmt(c.packs):'-'}</div><div class="k">取れ数（${fmtAmt(Number(r.packG))}g/パック）</div></div>
+      <div><div class="v">${c.costRate!=null?Math.round(c.costRate)+'%':'-'}</div><div class="k">${r.sellPrice?'原価率（売価¥'+r.sellPrice+'）':'原価率（売価が未入力）'}</div></div>
+    </div>
+    <p class="muted">目標原価率 ${targetRate()}% なら売価 <b style="color:var(--main-dark);font-size:16px">¥${c.suggestPrice}</b> 以上（10円単位で切り上げ）${r.sellPrice?'':'　→ 売価は「✏️ 編集」→ パック詰め欄で入力'}</p>
+    <p class="muted">容器：${r.containerId!=null?esc(ingById(r.containerId)?.name||'?'):(r.containerName?esc(r.containerName):'なし')} ${yen(c.contPrice)}／個　＝ 中身 ${yen(c.perG*Number(r.packG))} ＋ 容器 ${yen(c.contPrice)}</p>`
+    :`<p class="muted">編集で「1パックのg数」と「容器」を入れると、1パック原価と取れ数が出ます。</p>`}
+  </div>
+  <div class="card"><h2>👨‍🍳 作り方</h2><ol class="steps">${(r.steps||[]).map(s=>`<li>${esc(s)}</li>`).join('')||'<li class="muted">（未入力）</li>'}</ol></div>
+  <div class="card"><h2>🧂 味付けのポイント</h2><ul class="points">${(r.points||[]).map(s=>`<li>${esc(s)}</li>`).join('')||'<li class="muted">（未入力）</li>'}</ul>
+  ${r.memo?`<h3>メモ</h3><p style="white-space:pre-wrap;font-size:14px">${esc(r.memo)}</p>`:''}</div>
+  ${r.transcript?`<div class="card"><h2>🎤 元の音声テキスト</h2><p class="muted" style="white-space:pre-wrap">${esc(r.transcript)}</p></div>`:''}
+  <p class="muted" style="text-align:center">最終更新 ${r.updatedAt?new Date(r.updatedAt).toLocaleString('ja-JP'):''}</p>
+  <button class="btn danger block" id="delRecipe">🗑 このレシピを削除</button>`;
+  $('#backList').addEventListener('click',()=>{renderList();showTab('list');});
+  $('#editBtn').addEventListener('click',()=>openEdit(r.id));
+  $$('.scale-bar button').forEach(b=>b.addEventListener('click',()=>{scale=Number(b.dataset.f);renderDetail();}));
+  $$('.amt').forEach(a=>a.addEventListener('click',()=>{
+    const i=r.ingredients[Number(a.dataset.idx)];const base=Number(i.amount)||0;if(!base)return;
+    const v=prompt(`「${i.name}」を何${i.unit}にしますか？（今は ${fmtAmt(base)}${i.unit}）`, fmtAmt(base));
+    if(v==null)return;const n=parseFloat(v);if(!n||n<=0)return;scale=n/base;renderDetail();}));
+  const ap=$('#applyScale');if(ap)ap.addEventListener('click',()=>{
+    if(!confirm(`全材料を ×${Math.round(scale*1000)/1000} にして上書きします。よろしいですか？`))return;
+    r.ingredients.forEach(i=>i.amount=Math.round((Number(i.amount)||0)*scale*100)/100);
+    if(r.finishedG)r.finishedG=Math.round(Number(r.finishedG)*scale);
+    r.updatedAt=Date.now();scale=1;saveLocal();renderDetail();toast('分量を上書きしました。忘れずに💾クラウドへ保存');});
+  $('#delRecipe').addEventListener('click',()=>{if(!confirm('「'+r.name+'」を削除しますか？'))return;
+    state.recipes=state.recipes.filter(x=>x.id!==r.id);saveLocal();renderList();showTab('list');toast('削除しました（💾クラウドへ保存で反映）');});
+}
+
+/* ---------- 編集 ---------- */
+function blankRecipe(){return {id:uid(),name:'',category:'その他',ingredients:[],steps:[],points:[],memo:'',finishedG:'',packG:'',containerId:null,containerName:'',containerManualPrice:'',sellPrice:'',photoUrl:'',photoId:'',transcript:'',createdAt:Date.now(),updatedAt:Date.now()};}
+function openEdit(id){const r=state.recipes.find(x=>x.id===id);editing=JSON.parse(JSON.stringify(r||blankRecipe()));if(!r)editing._new=true;renderEdit();showTab('edit');}
+function renderEdit(){
+  const e=editing;const p=$('#page-edit');
+  p.innerHTML=`
+  <div class="row" style="margin-bottom:10px"><button class="btn sub small" id="cancelEdit" style="flex:0 0 auto">← やめる</button><span></span><button class="btn small" id="saveEdit" style="flex:0 0 auto">✔ この内容で登録</button></div>
+  <div class="card">
+    <label class="lbl">料理名</label><input type="text" id="e_name" value="${esc(e.name)}" placeholder="例：鶏の照り煮">
+    <label class="lbl">カテゴリー</label><select id="e_cat">${CATS.map(c=>`<option ${e.category===c?'selected':''}>${c}</option>`).join('')}</select>
+    <label class="lbl">写真</label>
+    ${e.photoUrl?`<img class="photo" src="${esc(e.photoUrl)}" style="max-height:200px">`:''}
+    <input type="file" id="e_photo" accept="image/*" style="font-size:14px">
+    <p class="muted" id="photoMsg">撮影 または フォトライブラリから選択（自動で縮小してドライブに保存）</p>
+  </div>
+  <div class="card">
+    <h2>材料 <small class="muted">（g・ml で入力）</small></h2>
+    <div id="e_ings"></div>
+    <button class="btn sub small" id="addIng">＋ 材料を追加</button>
+    <label class="lbl">出来上がり重量（g）　<small>空欄なら材料の合計。実測したら入れると正確</small></label>
+    <input type="number" id="e_finished" value="${esc(e.finishedG)}" placeholder="例：850" inputmode="decimal">
+  </div>
+  <div class="card">
+    <h2>📦 パック詰め</h2>
+    <div class="row">
+      <div><label class="lbl">1パックのg数</label><input type="number" id="e_packG" value="${esc(e.packG)}" placeholder="例：120" inputmode="decimal"></div>
+      <div><label class="lbl">売価（円／パック・原価率の計算に使用）</label><input type="number" id="e_sell" value="${esc(e.sellPrice)}" placeholder="例：350" inputmode="numeric"></div>
+    </div>
+    <label class="lbl">容器</label>
+    <div class="row"><input type="text" id="e_container" readonly value="${esc(e.containerId!=null?(ingById(e.containerId)?.name||'?'):(e.containerName||''))}" placeholder="タップして容器を選ぶ"><button class="btn sub small" id="clearContainer" style="flex:0 0 auto">なし</button></div>
+    ${e.containerId==null?`<label class="lbl">容器の単価（手入力する場合・円/個）</label><input type="number" id="e_contPrice" value="${esc(e.containerManualPrice)}" inputmode="decimal">`:''}
+  </div>
+  <div class="card"><h2>作り方</h2><div id="e_steps"></div><button class="btn sub small" id="addStep">＋ 手順を追加</button></div>
+  <div class="card"><h2>味付けのポイント</h2><div id="e_points"></div><button class="btn sub small" id="addPoint">＋ ポイントを追加</button>
+    <label class="lbl">メモ</label><textarea id="e_memo" style="min-height:60px">${esc(e.memo||'')}</textarea></div>
+  <button class="btn block" id="saveEdit2">✔ この内容で登録</button>`;
+  renderEditIngs();renderEditSteps();renderEditPoints();
+  const save=()=>{collectEdit();if(!editing.name){toast('料理名を入れてください');return;}
+    const idx=state.recipes.findIndex(x=>x.id===editing.id);editing.updatedAt=Date.now();delete editing._new;
+    if(idx>=0)state.recipes[idx]=editing;else state.recipes.push(editing);
+    saveLocal();curId=editing.id;scale=1;renderDetail();showTab('detail');toast('登録しました（クラウドへも自動保存します）');cloudSave(true);};
+  $('#saveEdit').addEventListener('click',save);$('#saveEdit2').addEventListener('click',save);
+  $('#cancelEdit').addEventListener('click',()=>{if(editing._new){showTab('voice');}else{renderDetail();showTab('detail');}});
+  $('#addIng').addEventListener('click',()=>{collectEdit();editing.ingredients.push({name:'',masterId:null,amount:'',unit:'g'});renderEditIngs();openIngModal(editing.ingredients.length-1);});
+  $('#addStep').addEventListener('click',()=>{collectEdit();editing.steps.push('');renderEditSteps();});
+  $('#addPoint').addEventListener('click',()=>{collectEdit();editing.points.push('');renderEditPoints();});
+  $('#e_container').addEventListener('click',()=>{collectEdit();openIngModal('container');});
+  $('#clearContainer').addEventListener('click',()=>{collectEdit();editing.containerId=null;editing.containerName='';renderEdit();});
+  $('#e_photo').addEventListener('change',onPhoto);
+}
+function renderEditIngs(){
+  const box=$('#e_ings');box.innerHTML='<div class="editrow muted" style="font-size:12px"><span>材料（タップで食材マスターから選択）</span><span>分量</span><span>単位</span><span></span></div>';
+  editing.ingredients.forEach((i,idx)=>{
+    const m=i.masterId!=null?ingById(i.masterId):null;
+    const d=document.createElement('div');d.className='editrow';
+    d.innerHTML=`<input type="text" readonly value="${esc(i.name)}" class="ingname" data-idx="${idx}" style="${m?'':'border-color:var(--accent)'}" placeholder="タップして選ぶ">
+      <input type="number" step="any" inputmode="decimal" class="ingamt" data-idx="${idx}" value="${esc(i.amount)}">
+      <select class="ingunit" data-idx="${idx}">${['g','ml','個','枚','本','尾','袋','pc'].map(u=>`<option ${i.unit===u?'selected':''}>${u}</option>`).join('')}</select>
+      <button class="x" data-idx="${idx}">×</button>`;
+    box.appendChild(d);
+    if(!m&&i.name){const s=document.createElement('div');s.className='muted';s.style.cssText='margin:-4px 0 8px;font-size:12px';
+      s.innerHTML=`⚠ マスター未紐づけ　手入力単価 <input type="number" step="any" inputmode="decimal" class="ingmanual" data-idx="${idx}" value="${esc(i.manualPrice||'')}" style="width:80px;padding:4px;font-size:13px"> 円/${esc(i.unit)}`;box.appendChild(s);}
+  });
+  $$('.ingname').forEach(x=>x.addEventListener('click',()=>{collectEdit();openIngModal(Number(x.dataset.idx));}));
+  $$('#e_ings .x').forEach(x=>x.addEventListener('click',()=>{collectEdit();editing.ingredients.splice(Number(x.dataset.idx),1);renderEditIngs();}));
+}
+function renderEditSteps(){const b=$('#e_steps');b.innerHTML='';editing.steps.forEach((s,idx)=>{const d=document.createElement('div');d.className='steprow';
+  d.innerHTML=`<span>${idx+1}.</span><textarea class="stept" data-idx="${idx}">${esc(s)}</textarea><button class="x" data-idx="${idx}">×</button>`;b.appendChild(d);});
+  $$('#e_steps .x').forEach(x=>x.addEventListener('click',()=>{collectEdit();editing.steps.splice(Number(x.dataset.idx),1);renderEditSteps();}));}
+function renderEditPoints(){const b=$('#e_points');b.innerHTML='';editing.points.forEach((s,idx)=>{const d=document.createElement('div');d.className='steprow';
+  d.innerHTML=`<span>★</span><textarea class="pointt" data-idx="${idx}" style="min-height:40px">${esc(s)}</textarea><button class="x" data-idx="${idx}">×</button>`;b.appendChild(d);});
+  $$('#e_points .x').forEach(x=>x.addEventListener('click',()=>{collectEdit();editing.points.splice(Number(x.dataset.idx),1);renderEditPoints();}));}
+function collectEdit(){
+  const e=editing;const g=id=>$(id)?$(id).value:undefined;
+  e.name=(g('#e_name')||'').trim();e.category=g('#e_cat')||'その他';
+  e.finishedG=g('#e_finished')||'';e.packG=g('#e_packG')||'';e.sellPrice=g('#e_sell')||'';e.memo=g('#e_memo')||'';
+  if($('#e_contPrice'))e.containerManualPrice=$('#e_contPrice').value;
+  $$('.ingamt').forEach(x=>e.ingredients[Number(x.dataset.idx)].amount=x.value);
+  $$('.ingunit').forEach(x=>e.ingredients[Number(x.dataset.idx)].unit=x.value);
+  $$('.ingmanual').forEach(x=>e.ingredients[Number(x.dataset.idx)].manualPrice=x.value);
+  $$('.stept').forEach(x=>e.steps[Number(x.dataset.idx)]=x.value);
+  $$('.pointt').forEach(x=>e.points[Number(x.dataset.idx)]=x.value);
+  e.steps=e.steps.filter(s=>s.trim());e.points=e.points.filter(s=>s.trim());
+}
+
+/* ---------- 食材モーダル ---------- */
+let ingCat='すべて';
+function openIngModal(target){ingPickTarget=target;ingCat=target==='container'?'容器':'すべて';
+  $('#ingModalFor').textContent=target==='container'?'（容器）':'';$('#ingQ').value='';renderIngModal();$('#ingModal').classList.add('open');}
+function renderIngModal(){
+  const cats=['すべて',...ingCategories()];const cb=$('#ingCats');cb.innerHTML='';
+  cats.forEach(c=>{const b=document.createElement('button');b.className='chip'+(ingCat===c?' on':'');b.textContent=c;b.addEventListener('click',()=>{ingCat=c;renderIngModal();});cb.appendChild(b);});
+  const q=($('#ingQ').value||'').trim();
+  let list=ING.filter(i=>ingCat==='すべて'||i.category===ingCat);
+  if(q)list=list.filter(i=>(i.name||'').includes(q));
+  const box=$('#ingPicks');box.innerHTML='';
+  if(!ING.length){box.innerHTML='<p class="muted">食材マスターが未読み込みです。設定 → マスターを再読み込み</p>';}
+  list.slice(0,300).forEach(i=>{const d=document.createElement('div');d.className='pick';
+    d.innerHTML=`<span>${esc(i.name)}<br><small>${esc(i.category||'')}・${esc(i.supplier||'')}</small></span><small>${yen2(Number(i.unitPrice)||0)}/${esc(i.unit)}${i.yieldRate&&i.yieldRate!=100?'・歩留'+i.yieldRate+'%':''}</small>`;
+    d.addEventListener('click',()=>pickIng(i));box.appendChild(d);});
+}
+function pickIng(i){
+  if(ingPickTarget==='container'){editing.containerId=i.id;editing.containerName=i.name;editing.containerManualPrice='';closeIngModal();renderEdit();return;}
+  const row=editing.ingredients[ingPickTarget];row.name=i.name;row.masterId=i.id;
+  if(isWeightUnit(i.unit)){if(!isWeightUnit(row.unit))row.unit=i.unit;}else row.unit=i.unit;
+  row.manualPrice='';closeIngModal();renderEditIngs();
+}
+function closeIngModal(){$('#ingModal').classList.remove('open');}
+$('#ingQ').addEventListener('input',renderIngModal);
+$('#ingClose').addEventListener('click',closeIngModal);
+$('#ingManual').addEventListener('click',()=>{
+  if(ingPickTarget==='container'){const n=prompt('容器の名前');if(n==null)return;editing.containerId=null;editing.containerName=n;closeIngModal();renderEdit();return;}
+  const row=editing.ingredients[ingPickTarget];const n=prompt('材料名（マスターにない食材）',row.name||'');if(n==null)return;row.name=n;row.masterId=null;closeIngModal();renderEditIngs();});
+
+/* ---------- 写真 ---------- */
+function onPhoto(ev){
+  const f=ev.target.files[0];if(!f)return;
+  const msg=$('#photoMsg');msg.textContent='縮小中…';
+  const img=new Image();const url=URL.createObjectURL(f);
+  img.onload=async()=>{
+    const MAX=1000;let w=img.width,h=img.height;if(w>h&&w>MAX){h=h*MAX/w;w=MAX;}else if(h>MAX){w=w*MAX/h;h=MAX;}
+    const cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);
+    const dataUrl=cv.toDataURL('image/jpeg',0.82);URL.revokeObjectURL(url);
+    if(!gasUrl()){msg.textContent='GASのURLが未設定のため、ドライブに保存できません。';return;}
+    msg.textContent='ドライブへアップロード中…';
+    try{
+      const r=await fetch(gasUrl(),{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'photo',name:(editing.name||'sozai')+'_'+Date.now()+'.jpg',data:dataUrl.split(',')[1]})});
+      const j=await r.json();if(!j.ok)throw new Error(j.error||'失敗');
+      collectEdit();editing.photoUrl=j.url;editing.photoId=j.id;renderEdit();toast('写真を保存しました');
+    }catch(e){msg.textContent='アップロード失敗：'+e.message;}
+  };
+  img.src=url;
+}
+
+/* ---------- 音声認識 ---------- */
+let rec=null,recording=false,finalText='';
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function setupRec(){
+  if(!SR)return null;
+  const r=new SR();r.lang='ja-JP';r.continuous=true;r.interimResults=true;r.maxAlternatives=1;
+  r.onresult=ev=>{let interim='';
+    for(let i=ev.resultIndex;i<ev.results.length;i++){const t=ev.results[i][0].transcript;
+      if(ev.results[i].isFinal){appendTranscript(t);}else interim+=t;}
+    $('#interim').textContent=interim;};
+  r.onerror=ev=>{if(ev.error==='not-allowed'){toast('マイクの使用が許可されていません');stopRec();}else if(ev.error!=='no-speech'&&ev.error!=='aborted'){console.log('rec error',ev.error);}};
+  r.onend=()=>{ if(recording){ try{r.start();}catch(e){} } else {$('#micBtn').classList.remove('rec');$('#micLabel').textContent='タップで録音開始';} };
+  return r;
+}
+function appendTranscript(t){t=t.trim();if(!t)return;const ta=$('#transcript');ta.value=(ta.value?ta.value.replace(/\s+$/,'')+'\n':'')+t;ta.scrollTop=ta.scrollHeight;}
+function startRec(){
+  if(!SR){toast('このブラウザは音声認識に対応していません（iPhoneはSafari、AndroidとPCはChromeで開いてください）',4000);return;}
+  if(!rec)rec=setupRec();recording=true;
+  try{rec.start();}catch(e){}
+  $('#micBtn').classList.add('rec');$('#micLabel').textContent='録音中… もう一度タップで停止';
+}
+function stopRec(){recording=false;if(rec){try{rec.stop();}catch(e){}}$('#micBtn').classList.remove('rec');$('#micLabel').textContent='タップで録音開始';$('#interim').textContent='';}
+$('#micBtn').addEventListener('click',()=>recording?stopRec():startRec());
+$('#clearTx').addEventListener('click',()=>{if(confirm('聞き取った内容を消しますか？'))$('#transcript').value='';});
+$('#manualNew').addEventListener('click',()=>{stopRec();openEdit(null);});
+
+/* ---------- AI整形 ---------- */
+$('#aiBtn').addEventListener('click',aiStructure);
+async function aiStructure(){
+  stopRec();
+  const tx=$('#transcript').value.trim();if(!tx){toast('先に喋るか、テキストを入れてください');return;}
+  const key=localStorage.getItem(LS_KEY);if(!key){toast('設定でAPIキーを入れてください');showTab('settings');return;}
+  const btn=$('#aiBtn');btn.disabled=true;btn.textContent='整形中…（10〜20秒）';$('#aiNote').textContent='';
+  const masterList=ING.filter(i=>i.category!=='容器'&&i.category!=='消耗品').map(i=>`${i.id}:${i.name}(${i.unit})`).join('\n');
+  const sys=`あなたは日本の惣菜店の調理担当を助けるアシスタントです。調理中に喋った音声の書き起こしを、レシピデータ(JSON)に整形します。
+ルール:
+- 分量は必ず g または ml。大さじ・小さじ・カップ・個数が出てきたら、一般的な換算でgまたはmlに直す（例: しょうゆ大さじ1=18g, みりん大さじ1=18g, 砂糖大さじ1=9g, 塩小さじ1=6g, 油大さじ1=12g, 水1カップ=200ml）。換算した場合は steps か points に「（大さじ1を18gに換算）」のように添える。個・枚・本など重量が不明なものは unit をその単位のままにして amount は数量にする。
+- 「少々」「適量」は amount を 0 にせず、一般的な目安（塩少々=1g など）にして、pointsに「少々＝1g目安」と添える。
+- 食材は下の食材マスターから該当するものを探し、masterId にそのID（数値）を入れる。表記ゆれ（鶏もも/鶏もも肉 など）は同一とみなす。該当がなければ null。
+- steps は調理手順を時系列に、1手順1文で。
+- points は「味付けのポイント」「コツ」「注意点」など、話者が強調した内容やコツを短文で。
+- name は料理名（話者が言っていなければ材料と調理法から命名）。category は ${CATS.join('/')} のいずれか。
+- finishedG は話者が「出来上がり○g」と言った場合だけ数値、なければ null。packG（1パックのg数）、sellPrice（売価）も同様。
+- 出力はJSONのみ。前後に説明文やコードブロック記号を付けない。
+JSON形式:
+{"name":"","category":"","ingredients":[{"name":"","masterId":null,"amount":0,"unit":"g"}],"steps":[""],"points":[""],"finishedG":null,"packG":null,"sellPrice":null}
+
+食材マスター（ID:名前(単位)）:
+${masterList}`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:CLAUDE_MODEL,max_tokens:4000,system:sys,messages:[{role:'user',content:'音声の書き起こし:\n'+tx}]})});
+    const j=await res.json();
+    if(j.error)throw new Error(j.error.message||JSON.stringify(j.error));
+    let text=(j.content||[]).map(c=>c.text||'').join('');
+    const m=text.match(/\{[\s\S]*\}/);if(!m)throw new Error('JSONが見つかりません');
+    const d=JSON.parse(m[0]);
+    const r=blankRecipe();r._new=true;r.name=d.name||'';r.category=CATS.includes(d.category)?d.category:'その他';
+    r.ingredients=(d.ingredients||[]).map(i=>{const mm=i.masterId!=null?ingById(i.masterId):null;
+      return {name:mm?mm.name:(i.name||''),masterId:mm?mm.id:null,amount:Number(i.amount)||'',unit:i.unit||'g'};});
+    r.steps=(d.steps||[]).filter(Boolean);r.points=(d.points||[]).filter(Boolean);
+    r.finishedG=d.finishedG||'';r.packG=d.packG||'';r.sellPrice=d.sellPrice||'';r.transcript=tx;
+    editing=r;renderEdit();showTab('edit');
+    const un=r.ingredients.filter(i=>i.masterId==null).length;
+    toast(un?`整形しました。未紐づけの材料が${un}件あります（オレンジ枠をタップ）`:'整形しました。内容を確認して登録してください',3500);
+  }catch(e){$('#aiNote').textContent='AIエラー：'+e.message;toast('AIエラー：'+e.message,4000);}
+  finally{btn.disabled=false;btn.textContent='✨ AIでレシピに整形';}
+}
+
+/* ---------- クラウド同期 ---------- */
+function setSync(t){$('#syncStatus').textContent=t;}
+async function cloudSave(silent){
+  if(!gasUrl()){if(!silent)toast('設定でGASのURLを入れてください');return;}
+  setSync('保存中…');state.savedAt=Date.now();saveLocal();
+  try{
+    const r=await fetch(gasUrl(),{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'save',data:state})});
+    const j=await r.json();if(!j.ok)throw new Error(j.error||'失敗');
+    setSync('保存済 '+new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}));if(!silent)toast('クラウドへ保存しました');
+  }catch(e){setSync('保存失敗');toast('クラウド保存失敗：'+e.message+'（端末には残っています）',4000);}
+}
+async function cloudLoad(force){
+  if(!gasUrl())return;
+  setSync('読込中…');
+  try{
+    const r=await fetch(gasUrl()+'?action=load&t='+Date.now());const j=await r.json();
+    if(!j.ok)throw new Error(j.error||'失敗');
+    const cloud=j.data;
+    if(!cloud||!cloud.recipes){setSync('クラウド空');if(state.recipes.length&&!force){toast('クラウドが空なので端末のデータを送ります');cloudSave(true);}return;}
+    if(force||!state.recipes.length||(cloud.savedAt||0)>(state.savedAt||0)){state=cloud;saveLocal();renderList();if(curId)renderDetail();setSync('最新 '+new Date(cloud.savedAt||Date.now()).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'}));toast('クラウドの最新を読み込みました');}
+    else setSync('端末が最新');
+  }catch(e){setSync('読込失敗');if(force)toast('読み込み失敗：'+e.message,4000);}
+}
+$('#loadCloud').addEventListener('click',()=>cloudLoad(true));
+$('#exportJson').addEventListener('click',()=>{const b=new Blob([JSON.stringify(state,null,1)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='sozai_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();});
+
+/* 保存ボタン（ヘッダー右をタップで保存） */
+$('#syncStatus').addEventListener('click',()=>cloudSave(false));
+$('#syncStatus').style.cursor='pointer';
+$('#syncStatus').title='タップでクラウドへ保存';
+
+/* ---------- 設定 ---------- */
+$('#saveGas').addEventListener('click',()=>{const u=$('#gasUrl').value.trim();if(!u.startsWith('https://script.google.com/')){toast('GASのURLの形が違います');return;}localStorage.setItem(LS_GAS,u);$('#gasMsg').textContent='保存しました';fetchIngredients(false).then(()=>cloudLoad(false));});
+$('#testGas').addEventListener('click',async()=>{const m=$('#gasMsg');m.textContent='接続中…';try{const r=await fetch(gasUrl()+'?action=ping&t='+Date.now());const j=await r.json();m.textContent=j.ok?'✅ 接続OK（食材 '+j.ingCount+'品目）':'❌ '+j.error;}catch(e){m.textContent='❌ 接続できません：'+e.message;}});
+$('#reloadIng').addEventListener('click',()=>{$('#ingMsg').textContent='読み込み中…';fetchIngredients(false).then(ok=>{if(ok){toast('食材マスター '+ING.length+'品目');renderList();}});});
+$('#saveKey').addEventListener('click',()=>{const k=$('#apiKey').value.trim();if(!k.startsWith('sk-ant-')){toast('APIキーの形が違います（sk-ant-で始まります）');return;}localStorage.setItem(LS_KEY,k);$('#keyMsg').textContent='保存しました（この端末のみ）';});
+$('#delKey').addEventListener('click',()=>{localStorage.removeItem(LS_KEY);$('#apiKey').value='';$('#keyMsg').textContent='削除しました';});
+$('#saveRate').addEventListener('click',()=>{const v=Number($('#targetRate').value);if(!(v>0&&v<100)){toast('1〜99の数字を入れてください');return;}localStorage.setItem(LS_RATE,String(v));toast('目標原価率 '+v+'% にしました');renderList();if(curId)renderDetail();});
+$('#taxIncl').addEventListener('change',ev=>{localStorage.setItem(LS_TAX,ev.target.checked?'1':'0');renderList();if(curId)renderDetail();});
+
+/* ---------- 起動 ---------- */
+(async function init(){
+  loadLocal();
+  $('#gasUrl').value=gasUrl();$('#apiKey').value=localStorage.getItem(LS_KEY)||'';$('#taxIncl').checked=taxIncl();$('#targetRate').value=targetRate();
+  if(ING.length)$('#ingMsg').textContent='キャッシュ：'+ING.length+'品目';
+  renderChips();renderList();
+  if(gasUrl()){await fetchIngredients(true);renderList();await cloudLoad(false);}
+  else setSync('未設定');
+  /* 保存ボタンをフッターに追加 */
+  const sb=document.createElement('button');sb.className='btn block';sb.textContent='💾 クラウドへ保存';sb.style.cssText='position:fixed;left:14px;right:90px;bottom:24px;z-index:30;max-width:400px';sb.id='saveCloudBtn';
+  sb.addEventListener('click',()=>cloudSave(false));document.body.appendChild(sb);
+})();
+</script>
+</body>
+</html>
