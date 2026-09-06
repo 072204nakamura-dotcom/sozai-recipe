@@ -153,11 +153,8 @@ ul.points{padding-left:0;list-style:none;} ul.points li{background:#fff8ec;borde
     <p class="muted" id="ingMsg"></p>
   </div>
   <div class="card">
-    <h2>🤖 AI整形（Anthropic APIキー）</h2>
-    <p class="muted">音声テキストを材料・分量・手順・味付けポイントに自動で仕分けます。キーはこの端末のブラウザ内だけに保存されます。1回あたり約1〜3円。</p>
-    <input type="text" id="apiKey" placeholder="sk-ant-...">
-    <div class="row" style="margin-top:8px"><button class="btn" id="saveKey">キーを保存</button><button class="btn sub" id="delKey">キーを削除</button></div>
-    <p class="muted" id="keyMsg"></p>
+    <h2>🤖 AI整形</h2>
+    <p class="muted">音声テキストを材料・分量・手順・味付けポイントに自動で仕分けます。AIのキーはGAS側に置いてあるので、端末ごとの設定は不要です（GASのURLだけでOK）。1回あたり約1〜3円。</p>
   </div>
   <div class="card">
     <h2>💰 原価の表示</h2>
@@ -205,14 +202,13 @@ ul.points{padding-left:0;list-style:none;} ul.points li{background:#fff8ec;borde
 <script>
 /* ======================================================
    お惣菜レシピ帳  v1.0
-   - 音声入力（Web Speech API）→ Claude APIで整形
+   - 音声入力（Web Speech API）→ GAS経由でClaude APIが整形（キーはGAS側）
    - 食材マスター：原価管理アプリの DATA_ING を共有（読み取り専用）
    - データ：GAS経由でスプレッドシート SOZAI_DATA へ保存（チャンク分割）
    - 写真：GAS経由でGoogleドライブに保存
    ====================================================== */
-const LS_DATA='sozai_v1', LS_GAS='sozai_gas', LS_KEY='sozai_apikey', LS_ING='sozai_ing_cache', LS_TAX='sozai_taxincl', LS_RATE='sozai_targetrate';
+const LS_DATA='sozai_v1', LS_GAS='sozai_gas', LS_ING='sozai_ing_cache', LS_TAX='sozai_taxincl', LS_RATE='sozai_targetrate';
 const CATS=['煮物','和え物','揚げ物','焼き物','炒め物','サラダ・マリネ','ご飯もの','汁物','その他'];
-const CLAUDE_MODEL='claude-sonnet-4-6';
 
 let state={recipes:[],savedAt:0};
 let ING=[];            // 食材マスター
@@ -552,7 +548,7 @@ $('#aiBtn').addEventListener('click',aiStructure);
 async function aiStructure(){
   stopRec();
   const tx=$('#transcript').value.trim();if(!tx){toast('先に喋るか、テキストを入れてください');return;}
-  const key=localStorage.getItem(LS_KEY);if(!key){toast('設定でAPIキーを入れてください');showTab('settings');return;}
+  if(!gasUrl()){toast('設定でGASのURLを入れてください');showTab('settings');return;}
   const btn=$('#aiBtn');btn.disabled=true;btn.textContent='整形中…（10〜20秒）';$('#aiNote').textContent='';
   const masterList=ING.filter(i=>i.category!=='容器'&&i.category!=='消耗品').map(i=>`${i.id}:${i.name}(${i.unit})`).join('\n');
   const sys=`あなたは日本の惣菜店の調理担当を助けるアシスタントです。調理中に喋った音声の書き起こしを、レシピデータ(JSON)に整形します。
@@ -571,11 +567,10 @@ JSON形式:
 食材マスター（ID:名前(単位)）:
 ${masterList}`;
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:CLAUDE_MODEL,max_tokens:4000,system:sys,messages:[{role:'user',content:'音声の書き起こし:\n'+tx}]})});
+    const res=await fetch(gasUrl(),{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'ai',system:sys,user:'音声の書き起こし:\n'+tx})});
     const j=await res.json();
-    if(j.error)throw new Error(j.error.message||JSON.stringify(j.error));
-    let text=(j.content||[]).map(c=>c.text||'').join('');
+    if(!j.ok)throw new Error(j.error||'AI応答エラー');
+    let text=j.text||'';
     const m=text.match(/\{[\s\S]*\}/);if(!m)throw new Error('JSONが見つかりません');
     const d=JSON.parse(m[0]);
     const r=blankRecipe();r._new=true;r.name=d.name||'';r.category=CATS.includes(d.category)?d.category:'その他';
@@ -625,15 +620,13 @@ $('#syncStatus').title='タップでクラウドへ保存';
 $('#saveGas').addEventListener('click',()=>{const u=$('#gasUrl').value.trim();if(!u.startsWith('https://script.google.com/')){toast('GASのURLの形が違います');return;}localStorage.setItem(LS_GAS,u);$('#gasMsg').textContent='保存しました';fetchIngredients(false).then(()=>cloudLoad(false));});
 $('#testGas').addEventListener('click',async()=>{const m=$('#gasMsg');m.textContent='接続中…';try{const r=await fetch(gasUrl()+'?action=ping&t='+Date.now());const j=await r.json();m.textContent=j.ok?'✅ 接続OK（食材 '+j.ingCount+'品目）':'❌ '+j.error;}catch(e){m.textContent='❌ 接続できません：'+e.message;}});
 $('#reloadIng').addEventListener('click',()=>{$('#ingMsg').textContent='読み込み中…';fetchIngredients(false).then(ok=>{if(ok){toast('食材マスター '+ING.length+'品目');renderList();}});});
-$('#saveKey').addEventListener('click',()=>{const k=$('#apiKey').value.trim();if(!k.startsWith('sk-ant-')){toast('APIキーの形が違います（sk-ant-で始まります）');return;}localStorage.setItem(LS_KEY,k);$('#keyMsg').textContent='保存しました（この端末のみ）';});
-$('#delKey').addEventListener('click',()=>{localStorage.removeItem(LS_KEY);$('#apiKey').value='';$('#keyMsg').textContent='削除しました';});
 $('#saveRate').addEventListener('click',()=>{const v=Number($('#targetRate').value);if(!(v>0&&v<100)){toast('1〜99の数字を入れてください');return;}localStorage.setItem(LS_RATE,String(v));toast('目標原価率 '+v+'% にしました');renderList();if(curId)renderDetail();});
 $('#taxIncl').addEventListener('change',ev=>{localStorage.setItem(LS_TAX,ev.target.checked?'1':'0');renderList();if(curId)renderDetail();});
 
 /* ---------- 起動 ---------- */
 (async function init(){
   loadLocal();
-  $('#gasUrl').value=gasUrl();$('#apiKey').value=localStorage.getItem(LS_KEY)||'';$('#taxIncl').checked=taxIncl();$('#targetRate').value=targetRate();
+  $('#gasUrl').value=gasUrl();$('#taxIncl').checked=taxIncl();$('#targetRate').value=targetRate();
   if(ING.length)$('#ingMsg').textContent='キャッシュ：'+ING.length+'品目';
   renderChips();renderList();
   if(gasUrl()){await fetchIngredients(true);renderList();await cloudLoad(false);}
