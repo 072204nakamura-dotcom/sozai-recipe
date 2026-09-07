@@ -209,6 +209,10 @@ ul.points{padding-left:0;list-style:none;} ul.points li{background:#fff8ec;borde
    ====================================================== */
 const LS_DATA='sozai_v1', LS_GAS='sozai_gas', LS_ING='sozai_ing_cache', LS_TAX='sozai_taxincl', LS_RATE='sozai_targetrate';
 const CATS=['煮物','和え物','揚げ物','焼き物','炒め物','サラダ・マリネ','ご飯もの','汁物','その他'];
+/* AI整形の食材ルール（店の決まり）。「塩」とだけ言ったときにどれを使うか等。増やすときは1行足す */
+const AI_HINTS=[
+  '「塩」とだけ言った場合（種類の指定なし）は、必ず「伯方の塩　焼き塩　１ｋ」を使う（masterIdはその食材のID）。「食塩」「原塩」「天日塩」は選ばない。',
+];
 
 let state={recipes:[],savedAt:0};
 let ING=[];            // 食材マスター
@@ -560,6 +564,8 @@ async function aiStructure(){
 - points は「味付けのポイント」「コツ」「注意点」など、話者が強調した内容やコツを短文で。
 - name は料理名（話者が言っていなければ材料と調理法から命名）。category は ${CATS.join('/')} のいずれか。
 - finishedG は話者が「出来上がり○g」と言った場合だけ数値、なければ null。packG（1パックのg数）、sellPrice（売価）も同様。
+- 店の食材ルール（最優先）:
+${AI_HINTS.map(h=>'  * '+h).join('\n')}
 - 出力はJSONのみ。前後に説明文やコードブロック記号を付けない。
 JSON形式:
 {"name":"","category":"","ingredients":[{"name":"","masterId":null,"amount":0,"unit":"g"}],"steps":[""],"points":[""],"finishedG":null,"packG":null,"sellPrice":null}
