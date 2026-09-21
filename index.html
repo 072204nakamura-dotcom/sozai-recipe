@@ -90,6 +90,9 @@ ul.points{padding-left:0;list-style:none;} ul.points li{background:#fff8ec;borde
 .steprow .x{border:none;background:none;color:var(--danger);font-size:20px;padding-top:6px;}
 .status{font-size:12px;color:var(--sub);text-align:right;margin-bottom:6px;}
 .hidden{display:none!important;}
+body.fs-big{zoom:1.15;} body.fs-huge{zoom:1.3;}
+nav.tabs button{white-space:nowrap;} body.fs-huge nav.tabs button{font-size:13px;padding:12px 2px;}
+.fs-bar{display:flex;gap:6px;} .fs-bar button{flex:1;padding:9px 0;border-radius:8px;border:1.5px solid var(--main);background:#fff;color:var(--main-dark);font-weight:700;font-size:14px;} .fs-bar button.on{background:var(--main);color:#fff;}
 .helpbar{display:flex;gap:8px;justify-content:center;padding:7px 12px;background:#efeee6;border-bottom:1px solid var(--line);}
 .helpbar a,.helpbar button{flex:1;max-width:220px;text-align:center;padding:7px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;background:#fff;border:1.5px solid var(--line);color:var(--sub);cursor:pointer;}
 .helpbar button{border-color:var(--main);color:var(--main-dark);}
@@ -166,6 +169,11 @@ ul.points{padding-left:0;list-style:none;} ul.points li{background:#fff8ec;borde
     <p class="muted">音声テキストを材料・分量・手順・味付けポイントに自動で仕分けます。AIのキーはGAS側に置いてあるので、端末ごとの設定は不要です（GASのURLだけでOK）。1回あたり約1〜3円。</p>
   </div>
   <div class="card">
+    <h2>🔍 文字の大きさ</h2>
+    <div class="fs-bar" id="fsBar"><button data-fs="normal">標準</button><button data-fs="big">大きめ</button><button data-fs="huge">特大</button></div>
+    <p class="muted">この端末だけの設定です。初めて開いたときは「大きめ」になっています。</p>
+  </div>
+  <div class="card">
     <h2>💰 原価の表示</h2>
     <label class="lbl"><input type="checkbox" id="taxIncl"> 税込で表示する（通常は税抜）</label>
     <label class="lbl">目標原価率（%）　<small>この率で「目安売価」を計算します</small></label>
@@ -232,7 +240,7 @@ ul.points{padding-left:0;list-style:none;} ul.points li{background:#fff8ec;borde
    - データ：GAS経由でスプレッドシート SOZAI_DATA へ保存（チャンク分割）
    - 写真：GAS経由でGoogleドライブに保存
    ====================================================== */
-const LS_DATA='sozai_v1', LS_GAS='sozai_gas', LS_ING='sozai_ing_cache', LS_TAX='sozai_taxincl', LS_RATE='sozai_targetrate';
+const LS_DATA='sozai_v1', LS_GAS='sozai_gas', LS_ING='sozai_ing_cache', LS_TAX='sozai_taxincl', LS_RATE='sozai_targetrate', LS_FS='sozai_fontsize';
 const CATS=['煮物','和え物','揚げ物','焼き物','炒め物','サラダ・マリネ','ご飯もの','汁物','その他'];
 /* AI整形の食材ルール（店の決まり）。「塩」とだけ言ったときにどれを使うか等。増やすときは1行足す */
 const AI_HINTS=[
@@ -647,6 +655,11 @@ $('#exportJson').addEventListener('click',()=>{const b=new Blob([JSON.stringify(
 $('#syncStatus').addEventListener('click',()=>cloudSave(false));
 $('#syncStatus').style.cursor='pointer';
 $('#syncStatus').title='タップでクラウドへ保存';
+
+/* ---------- 文字サイズ ---------- */
+function applyFs(){const v=localStorage.getItem(LS_FS)||'big';document.body.classList.remove('fs-big','fs-huge');if(v==='big')document.body.classList.add('fs-big');if(v==='huge')document.body.classList.add('fs-huge');$$('#fsBar button').forEach(b=>b.classList.toggle('on',b.dataset.fs===v));}
+$$('#fsBar button').forEach(b=>b.addEventListener('click',()=>{localStorage.setItem(LS_FS,b.dataset.fs);applyFs();}));
+applyFs();
 
 /* ---------- 設定 ---------- */
 $('#saveGas').addEventListener('click',()=>{const u=$('#gasUrl').value.trim();if(!u.startsWith('https://script.google.com/')){toast('GASのURLの形が違います');return;}localStorage.setItem(LS_GAS,u);$('#gasMsg').textContent='保存しました';fetchIngredients(false).then(()=>cloudLoad(false));});
