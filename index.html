@@ -90,6 +90,11 @@ ul.points{padding-left:0;list-style:none;} ul.points li{background:#fff8ec;borde
 .steprow .x{border:none;background:none;color:var(--danger);font-size:20px;padding-top:6px;}
 .status{font-size:12px;color:var(--sub);text-align:right;margin-bottom:6px;}
 .hidden{display:none!important;}
+.helpbar{display:flex;gap:8px;justify-content:center;padding:7px 12px;background:#efeee6;border-bottom:1px solid var(--line);}
+.helpbar a,.helpbar button{flex:1;max-width:220px;text-align:center;padding:7px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;background:#fff;border:1.5px solid var(--line);color:var(--sub);cursor:pointer;}
+.helpbar button{border-color:var(--main);color:var(--main-dark);}
+.fbkind{padding:6px 12px;border:1.5px solid var(--line);border-radius:16px;background:#fff;color:var(--sub);font-size:12px;font-weight:700;}
+.fbkind.on{background:var(--main);color:#fff;border-color:var(--main);}
 </style>
 </head>
 <body>
@@ -102,6 +107,10 @@ ul.points{padding-left:0;list-style:none;} ul.points li{background:#fff8ec;borde
   <button data-tab="voice">🎤 音声で作る</button>
   <button data-tab="settings">⚙ 設定</button>
 </nav>
+<div class="helpbar">
+  <a href="manual.html" target="_blank">❓ 使い方</a>
+  <button id="fbOpen">💬 ご意見箱</button>
+</div>
 <main>
 
 <!-- ===== レシピ一覧 ===== -->
@@ -194,6 +203,22 @@ ul.points{padding-left:0;list-style:none;} ul.points li{background:#fff8ec;borde
       <button class="btn sub" id="ingManual">マスターにない（手入力）</button>
       <button class="btn sub" id="ingClose">閉じる</button>
     </div>
+  </div>
+</div>
+
+<!-- ご意見箱モーダル -->
+<div class="modal" id="fbModal">
+  <div class="box">
+    <h2>💬 ご意見箱</h2>
+    <p class="muted">使いにくいところ、分からないところ、「こうなれば便利」を送ってください。小さなことでも大歓迎です。</p>
+    <label class="lbl">お名前（任意）</label>
+    <input type="text" id="fbName" placeholder="書かなくてもOK">
+    <label class="lbl">種類</label>
+    <div class="chips" id="fbKinds"></div>
+    <label class="lbl">内容</label>
+    <textarea id="fbText" placeholder="例：食材を探すときに◯◯が出てこない／原価の見方が分かりにくい"></textarea>
+    <button class="btn block" id="fbSend" style="margin-top:10px">送信する</button>
+    <button class="btn sub block" id="fbClose" style="margin-top:8px">キャンセル</button>
   </div>
 </div>
 
@@ -629,6 +654,22 @@ $('#testGas').addEventListener('click',async()=>{const m=$('#gasMsg');m.textCont
 $('#reloadIng').addEventListener('click',()=>{$('#ingMsg').textContent='読み込み中…';fetchIngredients(false).then(ok=>{if(ok){toast('食材マスター '+ING.length+'品目');renderList();}});});
 $('#saveRate').addEventListener('click',()=>{const v=Number($('#targetRate').value);if(!(v>0&&v<100)){toast('1〜99の数字を入れてください');return;}localStorage.setItem(LS_RATE,String(v));toast('目標原価率 '+v+'% にしました');renderList();if(curId)renderDetail();});
 $('#taxIncl').addEventListener('change',ev=>{localStorage.setItem(LS_TAX,ev.target.checked?'1':'0');renderList();if(curId)renderDetail();});
+
+/* ---------- ご意見箱（意見は原価管理アプリのGASに集約、ダッシュボードで一覧） ---------- */
+const FEEDBACK_URL='https://script.google.com/macros/s/AKfycbxfIp_fyisYQyXsy_oOL4q1gMRk9KExHjgtZQBv_HvSJbvMukINH8f7pmy8wUX0cChO/exec';
+const FEEDBACK_APP_NAME='お惣菜レシピ帳';
+const FB_KINDS=['困っている','こうしてほしい','不具合','その他'];
+let fbKind=FB_KINDS[0];
+function renderFbKinds(){const b=$('#fbKinds');b.innerHTML='';FB_KINDS.forEach(k=>{const x=document.createElement('button');x.type='button';x.className='fbkind'+(fbKind===k?' on':'');x.textContent=k;x.addEventListener('click',()=>{fbKind=k;renderFbKinds();});b.appendChild(x);});}
+$('#fbOpen').addEventListener('click',()=>{fbKind=FB_KINDS[0];renderFbKinds();$('#fbText').value='';$('#fbModal').classList.add('open');});
+$('#fbClose').addEventListener('click',()=>$('#fbModal').classList.remove('open'));
+$('#fbSend').addEventListener('click',()=>{
+  const text=($('#fbText').value||'').trim();if(!text){toast('内容を書いてください');return;}
+  const name=($('#fbName').value||'').trim();
+  try{fetch(FEEDBACK_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify({action:'save_feedback',data:{feedback:{at:new Date().toLocaleString('ja-JP'),app:FEEDBACK_APP_NAME,name:name,kind:fbKind,text:text}}})});}catch(e){}
+  $('#fbModal').classList.remove('open');toast('✅ 送信しました。ありがとうございます',3000);
+});
 
 /* ---------- 起動 ---------- */
 (async function init(){
