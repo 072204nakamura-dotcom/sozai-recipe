@@ -3,179 +3,238 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>お惣菜レシピ帳 使い方</title>
+<title>ピザ生地育成アプリ 使い方</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-:root{--main:#4a7c59;--main-dark:#35603f;--main-light:#e6f0e8;--accent:#d97b2e;--bg:#f7f6f1;--card:#fff;--text:#2c2c2c;--sub:#777;--line:#e2e0d8;}
-*{box-sizing:border-box;}
-body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif;font-size:17.5px;line-height:1.85;}
-header{background:var(--main);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:5;box-shadow:0 2px 6px rgba(0,0,0,.15);}
-header h1{margin:0;font-size:18px;}
-header .s{font-size:12px;opacity:.9;}
-main{max-width:760px;margin:0 auto;padding:16px 16px 60px;}
-nav.toc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:14px;}
-nav.toc a{display:inline-block;margin:3px 10px 3px 0;color:var(--main-dark);font-weight:600;text-decoration:none;}
-section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px;}
-h2{margin:0 0 10px;font-size:18px;color:var(--main-dark);border-left:5px solid var(--main);padding-left:10px;}
-h3{margin:16px 0 6px;font-size:15px;color:var(--main-dark);}
-ol,ul{padding-left:22px;margin:6px 0;} li{margin-bottom:6px;}
-.btn{display:inline-block;background:var(--main);color:#fff;border-radius:6px;padding:1px 9px;font-size:13px;font-weight:700;white-space:nowrap;}
-.btn.o{background:var(--accent);} .btn.w{background:#fff;color:var(--main-dark);border:1.5px solid var(--main);}
-.tip{background:#fff8ec;border-left:4px solid var(--accent);padding:10px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-size:14px;}
-.ok{background:var(--main-light);border-left:4px solid var(--main);padding:10px 12px;border-radius:0 8px 8px 0;margin:10px 0;font-size:14px;}
-.say{background:#f0f0ec;border-radius:10px;padding:10px 14px;margin:8px 0;font-size:15px;}
-.say b{color:var(--main-dark);}
-table{width:100%;border-collapse:collapse;font-size:14px;margin:8px 0;}
-th,td{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:top;}
-th{background:var(--main-light);color:var(--main-dark);font-weight:700;white-space:nowrap;}
-.wrap{overflow-x:auto;}
-.big{font-size:17px;font-weight:700;color:var(--main-dark);}
-footer{text-align:center;color:var(--sub);font-size:12px;padding:20px;}
-a.back{display:block;text-align:center;margin:20px auto;background:var(--main);color:#fff;text-decoration:none;padding:12px;border-radius:10px;font-weight:700;max-width:320px;}
+  :root {
+    --bg: #F5F3EC; --card: #FFFFFF; --ink: #33302B; --ink-soft: #7A736A;
+    --line: #E4E0D5; --primary: #4F6B3A; --primary-deep: #3D542C;
+    --st-biga-mix: #7A8B5E; --st-biga-done: #B8862F; --st-main: #9C5B21;
+    --st-divide: #6E5A8E; --st-rise: #3E7A6B; --st-bake: #B4452F;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 12px; }
+  body {
+    font-family: 'Zen Maru Gothic', sans-serif; background: var(--bg); color: var(--ink);
+    line-height: 1.8; font-size: 16px; padding-bottom: 60px;
+  }
+  .wrap { max-width: 620px; margin: 0 auto; padding: 0 16px; }
+  header { padding: 22px 0 10px; }
+  h1 { font-size: 1.35rem; }
+  .sub { color: var(--ink-soft); font-size: .85rem; }
+  .back {
+    display: inline-block; margin-top: 10px; padding: 7px 14px; border-radius: 20px;
+    border: 1.5px solid var(--line); background: var(--card); color: var(--ink);
+    text-decoration: none; font-size: .85rem; font-weight: 700;
+  }
+  .toc { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 6px; }
+  .toc a {
+    font-size: .8rem; padding: 5px 11px; border-radius: 16px; background: var(--card);
+    border: 1.5px solid var(--line); color: var(--ink); text-decoration: none;
+  }
+  section {
+    background: var(--card); border: 1.5px solid var(--line); border-radius: 16px;
+    padding: 16px; margin-top: 14px;
+  }
+  h2 { font-size: 1.05rem; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .chip { color: #fff; font-size: .72rem; border-radius: 12px; padding: 2px 10px; font-weight: 700; }
+  ol { padding-left: 1.3em; }
+  ol li { margin-bottom: 6px; }
+  p + p, p + ol, ol + p { margin-top: 8px; }
+  .tip {
+    background: #EEF2E7; border-radius: 12px; padding: 10px 12px; margin-top: 10px; font-size: .9rem;
+  }
+  .warn {
+    background: #FBEFE9; border-radius: 12px; padding: 10px 12px; margin-top: 10px; font-size: .9rem; color: #7A2E18;
+  }
+  .formula {
+    font-size: 1.05rem; font-weight: 700; text-align: center; background: var(--bg);
+    border-radius: 12px; padding: 10px; margin: 8px 0;
+  }
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 6px 0; font-size: .82rem; }
+  .flow span.st { color: #fff; border-radius: 12px; padding: 3px 10px; font-weight: 700; }
+  .flow .arr { color: var(--ink-soft); }
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; margin-top: 8px; }
+  td { padding: 6px 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td:first-child { color: var(--ink-soft); white-space: nowrap; padding-right: 10px; }
+  b.g { color: var(--primary-deep); }
 </style>
 </head>
 <body>
-<header>
-  <h1>🍱 お惣菜レシピ帳 使い方</h1>
-  <div class="s">喋るだけでレシピができて、原価が出るアプリです</div>
-</header>
-<main>
+<div class="wrap">
 
-<nav class="toc">
-  <a href="#s1">1. 最初に1回だけ</a>
-  <a href="#s2">2. 喋ってレシピを作る</a>
-  <a href="#s3">3. 材料を確認する</a>
-  <a href="#s4">4. パックと容器</a>
-  <a href="#s5">5. 写真</a>
-  <a href="#s6">6. 原価の見かた</a>
-  <a href="#s7">7. 分量を変える</a>
-  <a href="#s8">8. 保存のルール</a>
-  <a href="#s9">9. 困ったとき</a>
-  <a href="#s10">10. ご意見箱</a>
-</nav>
+<header>
+  <h1>🍕 ピザ生地育成アプリ 使い方</h1>
+  <div class="sub">生地の仕込みから焼き上がりまでを、みんなで記録するアプリです</div>
+  <a class="back" href="index.html">← アプリに戻る</a>
+  <div class="toc">
+    <a href="#s1">全体の流れ</a><a href="#s2">ホーム画面</a><a href="#s3">ビガ仕込み</a>
+    <a href="#s4">ビガ完成</a><a href="#s5">本捏ね</a><a href="#s6">分割・丸め</a>
+    <a href="#s7">二次発酵</a><a href="#s8">焼成</a><a href="#s9">大きさを測る</a>
+    <a href="#s10">温度を見る</a><a href="#s11">困ったとき</a><a href="#s12">ご意見箱</a>
+  </div>
+</header>
 
 <section id="s1">
-  <h2>1. 最初に1回だけやること</h2>
-  <p>スマホごとに1回だけ設定が必要です。2回目からはホーム画面のアイコンから開くだけです。</p>
-  <h3>iPhoneの場合</h3>
-  <ol>
-    <li>Safariでアプリのアドレスを開く（店長からLINEで届いたものをタップ）</li>
-    <li>画面下の <span class="btn w">共有</span>（四角に↑のマーク）→ 下にスクロールして <span class="btn w">ホーム画面に追加</span> → <span class="btn w">追加</span></li>
-    <li>ホーム画面にできた「お惣菜レシピ帳」のアイコンから開く</li>
-    <li>右上の <span class="btn w">⚙ 設定</span> を押す（文字が小さいときは、同じ設定画面の「🔍 文字の大きさ」で「特大」にできます）</li>
-    <li>「GAS WebアプリのURL」の欄に、店長から届いた<b>もう1つの長いアドレス</b>（script.google.com で始まるもの）を貼り付けて <span class="btn">URLを保存</span></li>
-    <li><span class="btn w">接続テスト</span> を押して「✅ 接続OK」と出れば完了</li>
-  </ol>
-  <h3>Androidの場合</h3>
-  <p>Chromeでアドレスを開き、右上の「︙」→「ホーム画面に追加」。あとはiPhoneと同じです。</p>
-  <div class="tip">アドレスが2つあります。<b>アプリのアドレス</b>（github.io）はブラウザで開くもの、<b>GASのアドレス</b>（script.google.com）は設定画面に貼るものです。取り違えると「接続テスト」が❌になります。</div>
+  <h2>1. 全体の流れ</h2>
+  <p>1回の仕込み（＝1バッチ）ごとに、工程が進むたびに記録を足していきます。</p>
+  <div class="flow">
+    <span class="st" style="background:var(--st-biga-mix)">ビガ仕込み</span><span class="arr">→</span>
+    <span class="st" style="background:var(--st-biga-done)">ビガ完成</span><span class="arr">→</span>
+    <span class="st" style="background:var(--st-main)">本捏ね</span><span class="arr">→</span>
+    <span class="st" style="background:var(--st-divide)">分割・丸め</span><span class="arr">→</span>
+    <span class="st" style="background:var(--st-rise)">二次発酵</span><span class="arr">→</span>
+    <span class="st" style="background:var(--st-bake)">焼成・結果</span>
+  </div>
+  <p>本捏ねした生地は<b>塊のまま冷蔵庫</b>で保管し、<b>使う日にその日の分だけ</b>分割します。本捏ねの日が「分割1日目」、4日目まで使います。分割・二次発酵・焼成は、使う日ごとに記録してください。</p>
+  <div class="tip">💡 全部の欄を埋めなくて大丈夫です。分かる欄だけ入れて保存してください。空欄があっても記録は残ります。</div>
 </section>
 
 <section id="s2">
-  <h2>2. 喋ってレシピを作る</h2>
+  <h2>2. ホーム画面の見かた</h2>
   <ol>
-    <li>下のタブ <span class="btn w">🎤 音声で作る</span> を押す</li>
-    <li>大きな丸いマイクボタンを押す（<b>赤くなったら録音中</b>）。初めてのときは「マイクの使用を許可しますか」と出るので「許可」</li>
-    <li>作りながら、材料と量と作り方を喋る</li>
-    <li>もう一度マイクを押して停止。聞き取った文章は下の欄に出るので、間違いは指で直せます</li>
-    <li><span class="btn o">✨ AIでレシピに整形</span> を押す。10〜20秒で材料・分量・作り方・ポイントに仕分けされます</li>
+    <li><b>育成中の生地</b>：今進んでいるバッチがカードで並びます。6つの丸が工程で、色が付いているところまで記録済みです</li>
+    <li>カードをタップすると、そのバッチの<b>記録の一覧</b>が開きます</li>
+    <li>右上の<b>「更新」</b>で、他の人が入れた記録も最新になります</li>
+    <li>下のボタン：<b>🌡 温度グラフ</b>／<b>📖 生地の教科書</b>（困ったときのQ&Aと材料の効果）</li>
   </ol>
-  <h3>喋り方のコツ</h3>
-  <div class="say">「鶏もも肉<b>500グラム</b>を一口大に切って、<b>塩3グラム</b>振ります。フライパンに油をひいて皮目から焼いて、酒<b>50ml</b>、みりん<b>40ml</b>、しょうゆ<b>40ml</b>、砂糖<b>15グラム</b>を入れて落とし蓋して10分煮ます。<b>ポイントは</b>最後に強火で煮詰めること。<b>出来上がり480グラム</b>、<b>1パック120グラム</b>で<b>売価380円</b>。」</div>
-  <ul>
-    <li>量は <b>グラム・ml</b> で言うと、そのまま入ります</li>
-    <li>「大さじ1」「少々」と言っても、アプリがグラムに直します（しょうゆ大さじ1＝18g、塩少々＝1g目安）</li>
-    <li>「<b>ポイントは</b>〜」「<b>コツは</b>〜」と言うと、味付けポイント欄に入ります</li>
-    <li>「<b>出来上がり</b>〇g」「<b>1パック</b>〇g」「<b>売価</b>〇円」も喋ると自動で入ります</li>
-    <li>「塩」と言えば伯方の焼き塩、「砂糖」と言えばきび砂糖が自動で選ばれます（店の決まり）</li>
-  </ul>
-  <div class="tip">iPhoneは、少し黙ると録音がいったん止まる仕様です。自動で再開しますが、止まったままなら話を区切って、もう一度マイクを押してください。</div>
-  <p>喋らずに作りたいときは、同じ画面の <span class="btn w">✏️ 喋らずに手入力で新規作成</span> を押します。</p>
 </section>
 
 <section id="s3">
-  <h2>3. 材料を確認する（ここが大事）</h2>
-  <p>整形が終わると「編集」画面が開きます。材料の欄を見てください。</p>
-  <ul>
-    <li><b>ふつうの枠</b>の材料 → 店の食材リスト（食材マスター）と紐づいています。そのままでOK</li>
-    <li><b>オレンジ色の枠</b>の材料 → 紐づいていません。<b>材料名をタップ</b>して、出てきた一覧から正しいものを選んでください。上の検索欄に名前を入れると絞り込めます</li>
-    <li>一覧にない食材は「マスターにない（手入力）」を押して名前を入れる。単価は空欄でかまいません（店長が入れます）</li>
-  </ul>
-  <p>分量や単位が違っていたら、数字の欄を直します。作り方・ポイントも文章を直せます。</p>
-  <p>確認できたら <span class="btn">✔ この内容で登録</span>。これで保存されます。</p>
-  <div class="ok">オレンジの材料が残っていても登録はできます。ただし、その材料の原価が計算に入らないので、あとで直してください。</div>
+  <h2><span class="chip" style="background:var(--st-biga-mix)">ビガ仕込み</span>新しい生地を始める</h2>
+  <ol>
+    <li>ホームの<b>「＋ 新しい生地を仕込む」</b>をタップ</li>
+    <li>バッチ名は「9/21 仕込み」のように自動で入ります（そのままでOK）</li>
+    <li>作る玉数が決まっていれば、<b>🎯 玉数から逆算</b>に玉数を入れると、ビガの粉・水・イーストが自動で計算されます（玉190g・余り100g込み）</li>
+    <li>いつも通りの量なら、配合は<b>最初から入っている数字のまま</b>でOK
+      <table>
+        <tr><td>ピッツァ用粉</td><td>840 g</td></tr>
+        <tr><td>ゆめちから</td><td>360 g</td></tr>
+        <tr><td>冷水</td><td>640 ml</td></tr>
+        <tr><td>生イースト</td><td>12 g</td></tr>
+      </table>
+    </li>
+    <li><b>粉温・水温・混ぜ上げ温度</b>を温度計で測って入れる（室温は自動で入ります）</li>
+    <li>写真を撮って、担当者の名前をタップして<b>「保存する」</b></li>
+  </ol>
+  <p>仕込み水の温度は、毎回この式で決めます。</p>
+  <div class="formula">水の温度 ＝ 63 − 粉の温度 − 室温</div>
+  <p class="sub">例：粉27℃・室温30℃ → 63−27−30＝<b>6℃の水</b>。混ぜ上げが20〜21℃になれば正解です。</p>
+  <div class="warn">⚠️ ビガは<b>捏ねない</b>（そぼろ状で止める）・<b>密閉しない</b>。混ぜ上げ温度は発酵の安定にいちばん効くので、必ず測ってください。</div>
 </section>
 
 <section id="s4">
-  <h2>4. パックと容器</h2>
-  <p>編集画面の「📦 パック詰め」の欄です。</p>
-  <ul>
-    <li><b>1パックのg数</b>：1パックに何グラム入れるか（例：120）</li>
-    <li><b>売価</b>：1パックいくらで売るか（分かれば）</li>
-    <li><b>容器</b>：欄をタップして、使う容器を一覧から選ぶ</li>
-    <li><b>出来上がり重量</b>：煮上がったあと、全部で何グラムになったか。<b>秤で量って入れると原価が正確になります</b>。空欄なら材料の合計で計算します</li>
-  </ul>
+  <h2><span class="chip" style="background:var(--st-biga-done)">ビガ完成</span>発酵の様子を残す</h2>
+  <ol>
+    <li>ホームでバッチのカードをタップ →<b>「＋ この生地に記録を追加」</b></li>
+    <li>工程は次にやるものが自動で選ばれています</li>
+    <li><b>発酵具合</b>を5段階で選ぶ：<b class="g">3 がちょうど良い</b>。1・2は不足、4・5は行き過ぎ</li>
+    <li>メモに香り・気泡・手ざわりを書き、写真を撮って保存</li>
+  </ol>
+  <div class="tip">💡 合格の目安は「甘い発酵の香り」＋「割ると中に細かい気泡」。ツンとくるアルコール臭は行き過ぎ、気泡が無く固いのは不足のサインです。</div>
 </section>
 
 <section id="s5">
-  <h2>5. 写真を残す</h2>
-  <p>編集画面の「写真」の欄で「ファイルを選択」→ <b>写真を撮る</b> か <b>フォトライブラリ</b> から選ぶ。自動で小さくしてクラウドに保存されます。盛り付けた状態を撮っておくと、次に作る人が助かります。</p>
+  <h2><span class="chip" style="background:var(--st-main)">本捏ね</span></h2>
+  <ol>
+    <li>記録を追加 → 工程「本捏ね」</li>
+    <li>配合はビガの量に合わせて自動で入ります
+      <table>
+        <tr><td>ピッツァ用粉</td><td>1200 g</td></tr>
+        <tr><td>水</td><td>990 ml</td></tr>
+        <tr><td>塩</td><td>52 g</td></tr>
+        <tr><td>生イースト</td><td>12 g</td></tr>
+        <tr><td>米麹パウダー</td><td>12 g（<b>必ず本捏ねで入れる</b>）</td></tr>
+        <tr><td>オリーブオイル</td><td>60 g（<b>いちばん最後に</b>）</td></tr>
+      </table>
+    </li>
+    <li>量を変えた日は、その数字に書き換えてから保存（加水率・塩分％がその場で表示されます）</li>
+    <li>捏ね上げ温度を測って入れる</li>
+  </ol>
+  <div class="tip">💡 入れる順番：ビガ＋水＋イースト＋粉＋麹で捏ねる → まとまったら塩 → なめらかになったらオリーブオイルを2回に分けて。</div>
 </section>
 
 <section id="s6">
-  <h2>6. 原価の見かた</h2>
-  <p>一覧でレシピをタップすると、上に3つの数字が出ます。</p>
-  <div class="wrap"><table>
-    <tr><th>表示</th><th>意味</th></tr>
-    <tr><td class="big">g単価</td><td>材料費の合計 ÷ 出来上がりの重さ。「1グラムいくらの料理か」</td></tr>
-    <tr><td>材料費合計</td><td>このレシピ全体の材料代（税抜）</td></tr>
-    <tr><td>出来上がり量</td><td>全部で何グラムできるか</td></tr>
-    <tr><td class="big">1パック原価</td><td>g単価 × 1パックのg数 ＋ 容器代。<b>1パック作るのにかかるお金</b></td></tr>
-    <tr><td>取れ数</td><td>このレシピで何パック取れるか</td></tr>
-    <tr><td>原価率</td><td>1パック原価 ÷ 売価。売価が入っているときだけ出ます</td></tr>
-  </table></div>
-  <p>「目標原価率〇%なら売価〇円以上」という目安も出ます。値付けの参考にしてください。</p>
+  <h2><span class="chip" style="background:var(--st-divide)">分割・丸め</span>使う日ごとに</h2>
+  <ol>
+    <li>その日使う分を切り出したら、記録を追加 → 工程「分割・丸め」</li>
+    <li><b>分割○日目</b>は本捏ねの日から自動で計算されます（本捏ね当日＝1日目）</li>
+    <li><b>残り生地量</b>も自動で入ります</li>
+    <li><b>この日取った玉数</b>を入れると、「残り約○玉ぶん」が表示されます</li>
+    <li>番重に並べた写真を撮って保存</li>
+  </ol>
+  <div class="tip">💡 残りの玉数が分かるので、「あと何枚焼けるか」「次のビガをいつ仕込むか」の目安になります。</div>
 </section>
 
 <section id="s7">
-  <h2>7. 分量を変える（倍量・半量）</h2>
-  <p>レシピの画面で <span class="btn w">×0.5</span> <span class="btn w">×1</span> <span class="btn w">×1.5</span> <span class="btn w">×2</span> <span class="btn w">×3</span> を押すと、全材料が換算されます。</p>
-  <p><b>材料の数字をタップ</b>すると「鶏ももを何gにしますか？」と聞かれます。たとえば「800」と入れると、他の材料も鶏もも800gに合わせて全部計算し直されます。手元にある材料の量から仕込み量を決めたいときに便利です。</p>
-  <div class="ok">換算は<b>表示だけ</b>です。押し間違えても元のレシピは変わりません。その分量で残したいときだけ「この分量で上書き保存」を押します。</div>
+  <h2><span class="chip" style="background:var(--st-rise)">二次発酵</span></h2>
+  <ol>
+    <li>焼く前に、記録を追加 → 工程「二次発酵」</li>
+    <li><b>発酵具合</b>を5段階で（3がちょうど良い）</li>
+    <li>できれば真横から写真を撮り、<a href="#s9">高さを測る</a></li>
+  </ol>
+  <div class="tip">💡 フィンガーテスト：指に粉をつけて側面を軽く押す。跡が<b>ゆっくり半分戻る</b>＝ちょうど良い／すぐ戻る＝まだ早い／戻らない＝行き過ぎ。</div>
 </section>
 
 <section id="s8">
-  <h2>8. 保存のルール</h2>
-  <div class="tip"><b>開いたら自動で最新になる。編集したら「💾 クラウドへ保存」。</b></div>
-  <ul>
-    <li>レシピを「登録」したときは自動でクラウドに保存されます</li>
-    <li>分量の上書きや削除をしたあとは、画面下の <span class="btn">💾 クラウドへ保存</span> を押してください</li>
-    <li>画面右上の文字が「保存済 〇:〇〇」になっていれば保存できています</li>
-    <li>他の人のスマホで開くと、自動で最新のレシピが見えます</li>
-    <li>電波がない場所では、前に見たレシピがそのまま見えます。保存は電波が戻ってから</li>
-  </ul>
+  <h2><span class="chip" style="background:var(--st-bake)">焼成・結果</span></h2>
+  <ol>
+    <li>焼いたら、記録を追加 → 工程「焼成・結果」</li>
+    <li>窯の設定（上火・下火・焼成時間）を、実際に焼いた数字に合わせる</li>
+    <li><b>仕上がり評価</b>を★1〜5で</li>
+    <li>メモに「耳の柔らかさ」「底の焼き色」「15分後の食感」などを書く</li>
+  </ol>
+  <div class="tip">💡 ★の評価がいちばん大事なデータです。何℃で何時間発酵した生地が★5だったか、あとで比べられるようになります。</div>
 </section>
 
 <section id="s9">
-  <h2>9. 困ったとき</h2>
-  <div class="wrap"><table>
-    <tr><th>こうなった</th><th>こうする</th></tr>
-    <tr><td>マイクを押しても反応しない</td><td>iPhoneは<b>Safari</b>、Androidは<b>Chrome</b>で開いているか確認。LINEの中で開いていると動きません。右上「…」→「Safariで開く」</td></tr>
-    <tr><td>「設定でGASのURLを入れてください」と出る</td><td>1番の設定がまだです。店長にGASのアドレスをもらって設定に貼る</td></tr>
-    <tr><td>接続テストが❌</td><td>貼ったアドレスが script.google.com で始まり /exec で終わっているか確認。途中で切れていたら貼り直し</td></tr>
-    <tr><td>AIエラーと出る</td><td>電波を確認してもう一度。何度も出るなら店長へ（ご意見箱でもOK）</td></tr>
-    <tr><td>材料の一覧に食材が出ない</td><td>設定 → 「🔄 マスターを再読み込み」</td></tr>
-    <tr><td>写真が保存できない</td><td>電波を確認。写真なしでも登録はできるので、あとから編集で追加できます</td></tr>
-    <tr><td>登録したレシピが他の人のスマホに出ない</td><td>登録した側で「💾 クラウドへ保存」→ 見る側で設定 → 「📥 クラウドから読み込み」</td></tr>
-  </table></div>
+  <h2>📏 写真で大きさを測る</h2>
+  <p>番重がいっしょに写っていれば、写真から玉の直径や高さが測れます。</p>
+  <ol>
+    <li>記録の写真を撮ったあと<b>「📏 写真から生地のサイズを測る」</b>をタップ</li>
+    <li>下のボタンで基準を選ぶ：<b>番重の高さ65mm／縦300mm／横500mm</b></li>
+    <li>写真の番重の<b>両端を2回タップ</b>（高さなら縁の上と下）</li>
+    <li>次に<b>生地の両端を2回タップ</b> → mmが表示されます。何玉でも続けて測れます</li>
+    <li>「測定を確定」→ 保存</li>
+  </ol>
+  <div class="tip">💡 直径は<b>真上から</b>、高さは<b>真横から</b>撮影。斜めから撮ると数mmずれます。</div>
 </section>
 
 <section id="s10">
-  <h2>10. ご意見箱</h2>
-  <p>画面上の <span class="btn w">💬 ご意見箱</span> から、使いにくいところ・分からないところ・「こうなれば便利」を送れます。名前は書かなくても大丈夫です。小さなことでも大歓迎です。送った意見は店長の画面に届き、直したものから順に対応します。</p>
+  <h2>🌡 温度を見る</h2>
+  <p>ビガ置き場・番重ラック・冷蔵庫の3か所に温度計があり、<b>15分ごとに自動で記録</b>されています。</p>
+  <ol>
+    <li>記録を入れるとき、<b>室温は自動で入ります</b>。別の場所の温度にしたいときは「📡 センサー現在値」のボタンをタップ</li>
+    <li>バッチを開くと<b>「この生地が過ごした温度」</b>に、ビガ発酵中・冷蔵保管中・二次発酵中の平均・最低・最高が出ます</li>
+    <li>ホームの<b>「🌡 温度グラフを見る」</b>で、始まりと終わりの時刻を入れると、その間の温度がグラフで見られます</li>
+  </ol>
+  <div class="tip">💡 「振れ幅」が大きい日は生地が暴れやすい日です。夜中に温度が上がっていないか、グラフで確認できます。</div>
 </section>
 
-<a class="back" href="index.html">← アプリに戻る</a>
-<footer>お惣菜レシピ帳 v1.3</footer>
-</main>
+<section id="s11">
+  <h2>🆘 困ったとき</h2>
+  <table>
+    <tr><td>保存したのに出てこない</td><td>反映まで数秒かかります。少し待って右上の<b>「更新」</b>。<b>保存を2回押さない</b>でください（同じ記録が2つできます）</td></tr>
+    <tr><td>記録を間違えた</td><td>アプリからは消せません。<a href="#s12">ご意見箱</a>で「◯日の◯◯の記録を消してほしい」と送ってください</td></tr>
+    <tr><td>室温が入らない</td><td>温度計の電波が届いていないことがあります。手で入れてOK</td></tr>
+    <tr><td>生地のことで迷った</td><td>ホームの<b>📖 生地の教科書</b>に、硬い・縮む・ベタつく・発酵の見極めなどのQ&Aがあります</td></tr>
+    <tr><td>練習したい</td><td><a href="demo.html">デモ画面</a>は自由に触ってOK。保存しても本番には残りません</td></tr>
+  </table>
+</section>
+
+<section id="s12">
+  <h2>💬 ご意見箱</h2>
+  <p>アプリ上部の<b>「💬 ご意見箱」</b>から、使いにくいところ・分からないところ・「こうなれば便利」を送れます。</p>
+  <ol>
+    <li>名前は書かなくてもOK</li>
+    <li>種類を選ぶ（困っている／こうしてほしい／不具合／その他）</li>
+    <li>内容を書いて「送信する」</li>
+  </ol>
+  <div class="tip">💡 小さなことでも大歓迎です。届いた声をもとに、アプリを使いやすく直していきます。</div>
+</section>
+
+</div>
 </body>
 </html>
